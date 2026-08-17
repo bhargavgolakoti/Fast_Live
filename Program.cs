@@ -15,6 +15,7 @@ builder.Services.AddPooledDbContextFactory<CrmDbContext>(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCaching();
 builder.Services.AddScoped<VisitorCounterService>();
+builder.Services.AddSingleton<VisitorPresenceService>();
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;

@@ -97,15 +97,20 @@
             <p class="eyebrow">CRM API live counter</p>
             <h1 id="visitor-title">Visitors</h1>
             <output id="count" aria-live="polite">...</output>
+            <p class="eyebrow">Live users <strong id="active-users">...</strong></p>
             <p id="status">Recording your visit.</p>
             <div class="actions"><a href="/swagger">Open API console</a></div>
         </section>
     </main>
     <script>
         const count = document.getElementById("count");
+        const activeUsers = document.getElementById("active-users");
         const status = document.getElementById("status");
+        const sessionId = sessionStorage.getItem("visitor-session-id") || crypto.randomUUID();
+        sessionStorage.setItem("visitor-session-id", sessionId);
         const showCount = (result) => {
             count.value = result.count.toLocaleString();
+            activeUsers.textContent = result.activeUsers.toLocaleString();
             status.textContent = "Live total updated " + new Date(result.updatedAt).toLocaleTimeString();
         };
         const getCount = async () => {
@@ -115,7 +120,7 @@
         };
         const registerVisit = async () => {
             try {
-                const response = await fetch("/api/v1/visitors/visit", { method: "POST" });
+                const response = await fetch("/api/v1/visitors/visit?sessionId=" + encodeURIComponent(sessionId), { method: "POST" });
                 if (!response.ok) throw new Error("Unable to record visit.");
                 showCount(await response.json());
             } catch (error) {
@@ -124,6 +129,7 @@
         };
         registerVisit();
         setInterval(() => getCount().catch(error => status.textContent = error.message), 3000);
+        setInterval(registerVisit, 15000);
     </script>
 </body>
 
