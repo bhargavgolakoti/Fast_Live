@@ -1,0 +1,9 @@
+@model Customer
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row g-3">
+  <div class="col-md-6"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
+  <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email" class="text-danger"></span></div>
+  <div class="col-md-6"><label asp-for="Company" class="form-label"></label><input asp-for="Company" class="form-control" /><span asp-validation-for="Company" class="text-danger"></span></div>
+  <div class="col-md-6"><label asp-for="Phone" class="form-label"></label><input asp-for="Phone" class="form-control" /><span asp-validation-for="Phone" class="text-danger"></span></div>
+  <div class="col-md-6"><label asp-for="Status" class="form-label"></label><select asp-for="Status" class="form-select"><option>Active</option><option>Prospect</option><option>Inactive</option></select><span asp-validation-for="Status" class="text-danger"></span></div>
+</div>
