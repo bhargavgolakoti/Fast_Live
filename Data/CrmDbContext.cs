@@ -8,4 +8,5 @@ public class CrmDbContext(DbContextOptions<CrmDbContext> options) : DbContext(op
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<CrmTask> Tasks => Set<CrmTask>();
+    public DbSet<VisitorCounter> VisitorCounters => Set<VisitorCounter>();
 }

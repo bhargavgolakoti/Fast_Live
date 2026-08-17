@@ -1,4 +1,5 @@
 using AspnetCoreMvcFull.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspnetCoreMvcFull.Data;
 
@@ -6,6 +7,13 @@ public static class CrmDataSeeder
 {
     public static void Seed(CrmDbContext database)
     {
+        database.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS \"VisitorCounters\" (\"Id\" INTEGER NOT NULL CONSTRAINT \"PK_VisitorCounters\" PRIMARY KEY, \"Count\" INTEGER NOT NULL);");
+        if (!database.VisitorCounters.Any())
+        {
+            database.VisitorCounters.Add(new VisitorCounter { Id = 1, Count = 0 });
+            database.SaveChanges();
+        }
+
         if (database.Customers.Any())
         {
             return;
