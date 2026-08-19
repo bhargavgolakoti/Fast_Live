@@ -25,6 +25,18 @@ public class LiveCounterController(LiveCounterStore store, LivePresence presence
         return Ok(CreateSnapshot(totalVisits));
     }
 
+    [HttpPost("leave")]
+    public IActionResult Leave([FromQuery] string? sessionId)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId) || sessionId.Length > 100)
+        {
+            return BadRequest(new { error = "A sessionId between 1 and 100 characters is required." });
+        }
+
+        presence.Remove(sessionId);
+        return NoContent();
+    }
+
     [HttpGet]
     public async Task<ActionResult<LiveCounterSnapshot>> Get(CancellationToken cancellationToken)
     {

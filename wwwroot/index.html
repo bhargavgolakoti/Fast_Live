@@ -39,11 +39,14 @@
       if (!response.ok) throw new Error('Live counter unavailable');
       const data = await response.json();
       total.textContent = data.totalVisits.toLocaleString();
-      active.textContent = `${data.activeSessions} active ${data.activeSessions === 1 ? 'session' : 'sessions'} in the last 45 seconds`;
+      active.textContent = `${data.activeSessions} active ${data.activeSessions === 1 ? 'session' : 'sessions'} right now`;
       updated.textContent = `Updated ${new Date(data.updatedAt).toLocaleTimeString()}`;
     }
     refresh().catch(() => { active.textContent = 'The live feed is temporarily unavailable.'; });
-    setInterval(() => refresh().catch(() => {}), 15000);
+    setInterval(() => refresh().catch(() => {}), 3000);
+    addEventListener('pagehide', () => {
+      navigator.sendBeacon(`/api/v1/live-counter/leave?sessionId=${encodeURIComponent(sessionId)}`);
+    });
   </script>
 </body>
 </html>

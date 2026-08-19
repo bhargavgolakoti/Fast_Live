@@ -4,7 +4,7 @@ namespace LiveCounter.Services;
 
 public class LivePresence
 {
-    private static readonly TimeSpan ActiveWindow = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan ActiveWindow = TimeSpan.FromSeconds(10);
     private readonly ConcurrentDictionary<string, DateTimeOffset> sessions = new();
 
     public bool Touch(string sessionId)
@@ -13,6 +13,11 @@ public class LivePresence
         sessions[sessionId] = DateTimeOffset.UtcNow;
         RemoveExpired();
         return isNew;
+    }
+
+    public void Remove(string sessionId)
+    {
+        sessions.TryRemove(sessionId, out _);
     }
 
     public int Count
