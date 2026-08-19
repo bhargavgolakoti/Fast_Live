@@ -1,136 +1,49 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Live Visitor Count</title>
-    <style>
-        :root {
-            color-scheme: light;
-            font-family: Georgia, "Times New Roman", serif;
-            background: #f3f0e7;
-            color: #1f3028;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            padding: 24px;
-            background-image: linear-gradient(90deg, rgba(31, 48, 40, .05) 1px, transparent 1px), linear-gradient(rgba(31, 48, 40, .05) 1px, transparent 1px);
-            background-size: 32px 32px;
-        }
-
-        main {
-            width: min(100%, 560px);
-        }
-
-        .panel {
-            border: 1px solid #1f3028;
-            background: #fbfaf5;
-            box-shadow: 8px 8px 0 #d57d4a;
-            padding: clamp(28px, 7vw, 52px);
-        }
-
-        .eyebrow {
-            margin: 0 0 22px;
-            color: #b24d25;
-            font: 700 12px/1.2 Verdana, sans-serif;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: clamp(34px, 7vw, 56px);
-            line-height: 1;
-            font-weight: 500;
-        }
-
-        output {
-            display: block;
-            margin: 38px 0 12px;
-            font: 700 clamp(72px, 18vw, 128px)/.85 Verdana, sans-serif;
-            letter-spacing: 0;
-            color: #1c6a5a;
-        }
-
-        #status {
-            min-height: 24px;
-            margin: 0;
-            color: #53635b;
-            font: 14px/1.5 Verdana, sans-serif;
-        }
-
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 32px;
-        }
-
-        a {
-            display: inline-block;
-            border: 1px solid #1f3028;
-            padding: 11px 15px;
-            color: #1f3028;
-            font: 700 13px/1 Verdana, sans-serif;
-            text-decoration: none;
-        }
-
-        a:hover {
-            background: #1f3028;
-            color: #fbfaf5;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A live visitor counter powered by a small JSON API.">
+  <title>Live Counter</title>
+  <style>
+    :root { color-scheme: light; font-family: Georgia, 'Times New Roman', serif; background: #f4f1eb; color: #17211b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at 10% 10%, #d8e8df, transparent 35%), #f4f1eb; }
+    main { width: min(680px, 100%); border: 1px solid #b6c4ba; background: rgba(255, 253, 248, .86); padding: clamp(32px, 8vw, 72px); box-shadow: 14px 14px 0 #c5d7cc; }
+    .eyebrow { margin: 0 0 18px; color: #39664e; font: 700 12px/1.2 Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; max-width: 9ch; font-size: clamp(3rem, 10vw, 6.5rem); line-height: .9; font-weight: 500; }
+    .reading { display: flex; align-items: baseline; gap: 16px; margin: 44px 0 12px; }
+    #total { font: 700 clamp(3.5rem, 12vw, 7rem)/.9 Arial, sans-serif; letter-spacing: -.06em; }
+    .label { color: #526158; font: 700 13px/1.2 Arial, sans-serif; text-transform: uppercase; }
+    #active { margin: 0; color: #526158; font: 15px/1.5 Arial, sans-serif; }
+    footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 16px; border-top: 1px solid #b6c4ba; font: 13px/1.5 Arial, sans-serif; }
+    a { color: #245d43; }
+  </style>
 </head>
-
 <body>
-    <main>
-        <section class="panel" aria-labelledby="visitor-title">
-            <p class="eyebrow">CRM API live counter</p>
-            <h1 id="visitor-title">Visitors</h1>
-            <output id="count" aria-live="polite">...</output>
-            <p class="eyebrow">Live users <strong id="active-users">...</strong></p>
-            <p id="status">Recording your visit.</p>
-            <div class="actions"><a href="/swagger">Open API console</a></div>
-        </section>
-    </main>
-    <script>
-        const count = document.getElementById("count");
-        const activeUsers = document.getElementById("active-users");
-        const status = document.getElementById("status");
-        const sessionId = sessionStorage.getItem("visitor-session-id") || crypto.randomUUID();
-        sessionStorage.setItem("visitor-session-id", sessionId);
-        const showCount = (result) => {
-            count.value = result.count.toLocaleString();
-            activeUsers.textContent = result.activeUsers.toLocaleString();
-            status.textContent = "Live total updated " + new Date(result.updatedAt).toLocaleTimeString();
-        };
-        const getCount = async () => {
-            const response = await fetch("/api/v1/visitors/count");
-            if (!response.ok) throw new Error("Unable to load visitor count.");
-            showCount(await response.json());
-        };
-        const registerVisit = async () => {
-            try {
-                const response = await fetch("/api/v1/visitors/visit?sessionId=" + encodeURIComponent(sessionId), { method: "POST" });
-                if (!response.ok) throw new Error("Unable to record visit.");
-                showCount(await response.json());
-            } catch (error) {
-                status.textContent = error.message;
-            }
-        };
-        registerVisit();
-        setInterval(() => getCount().catch(error => status.textContent = error.message), 3000);
-        setInterval(registerVisit, 15000);
-    </script>
+  <main>
+    <p class="eyebrow">Live Counter</p>
+    <h1>People here now.</h1>
+    <div class="reading"><span id="total">--</span><span class="label">total visits</span></div>
+    <p id="active">Connecting to the live feed...</p>
+    <footer><span id="updated">Waiting for first reading</span><a href="/swagger" target="_blank" rel="noreferrer">API reference</a></footer>
+  </main>
+  <script>
+    const sessionId = sessionStorage.getItem('live-counter-session') || crypto.randomUUID();
+    sessionStorage.setItem('live-counter-session', sessionId);
+    const total = document.querySelector('#total');
+    const active = document.querySelector('#active');
+    const updated = document.querySelector('#updated');
+    async function refresh() {
+      const response = await fetch(`/api/v1/live-counter/visit?sessionId=${encodeURIComponent(sessionId)}`, { method: 'POST' });
+      if (!response.ok) throw new Error('Live counter unavailable');
+      const data = await response.json();
+      total.textContent = data.totalVisits.toLocaleString();
+      active.textContent = `${data.activeSessions} active ${data.activeSessions === 1 ? 'session' : 'sessions'} in the last 45 seconds`;
+      updated.textContent = `Updated ${new Date(data.updatedAt).toLocaleTimeString()}`;
+    }
+    refresh().catch(() => { active.textContent = 'The live feed is temporarily unavailable.'; });
+    setInterval(() => refresh().catch(() => {}), 15000);
+  </script>
 </body>
-
 </html>

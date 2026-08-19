@@ -1,48 +1,30 @@
-using AspnetCoreMvcFull.Data;
-using AspnetCoreMvcFull.Services;
-using Microsoft.AspNetCore.ResponseCompression;
+using LiveCounter.Data;
+using LiveCounter.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System.IO.Compression;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddDbContextPool<CrmDbContext>(options =>
-    options.UseSqlite("Data Source=crm.db"));
-builder.Services.AddPooledDbContextFactory<CrmDbContext>(options =>
-    options.UseSqlite("Data Source=crm.db"));
-builder.Services.AddMemoryCache();
-builder.Services.AddResponseCaching();
-builder.Services.AddScoped<VisitorCounterService>();
-builder.Services.AddSingleton<VisitorPresenceService>();
-builder.Services.AddResponseCompression(options =>
-{
-    options.EnableForHttps = true;
-    options.Providers.Add<BrotliCompressionProvider>();
-    options.Providers.Add<GzipCompressionProvider>();
-    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/json"]);
-});
-builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-builder.Services.AddProblemDetails();
+builder.Services.AddDbContextFactory<LiveCounterDbContext>(options =>
+    options.UseSqlite("Data Source=live-counter.db"));
+builder.Services.AddSingleton<LivePresence>();
+builder.Services.AddScoped<LiveCounterStore>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "CRM API",
-        Version = "v1",
-        Description = "SQLite-backed live visitor counter API."
-    }));
+builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
+{
+    Title = "Live Counter API",
+    Version = "v1",
+    Description = "A small API for a persistent visit count and active sessions."
+}));
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var database = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
+    var database = scope.ServiceProvider.GetRequiredService<LiveCounterDbContext>();
     database.Database.EnsureCreated();
-    CrmDataSeeder.Seed(database);
+    database.EnsureCounterExists();
 }
 
 // Configure the HTTP request pipeline.
@@ -53,18 +35,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseResponseCompression();
-app.UseResponseCaching();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.DocumentTitle = "CRM API Console";
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "CRM API v1");
-});
-app.UseAuthorization();
+app.UseSwaggerUI(options => options.DocumentTitle = "Live Counter API");
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).ExcludeFromDescription();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.Run();
