@@ -5,6 +5,12 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var railwayPort = Environment.GetEnvironmentVariable("PORT");
+if (int.TryParse(railwayPort, out var port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 builder.Services.AddDbContextFactory<LiveCounterDbContext>(options =>
     options.UseSqlite("Data Source=live-counter.db"));
 builder.Services.AddSingleton<LivePresence>();
@@ -34,7 +40,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseSwagger();

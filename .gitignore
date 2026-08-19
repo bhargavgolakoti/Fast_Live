@@ -94,6 +94,9 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+[Ll]ive-counter.db
+[Ll]ive-counter.db-shm
+[Ll]ive-counter.db-wal
 [Ll]og/
 
 # Visual Studio 2015/2017 cache/options directory
