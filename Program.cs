@@ -26,7 +26,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        options.LoginPath = "/";
+        options.LoginPath = "/Account/Login";
         options.Events.OnRedirectToLogin = context =>
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
 {
@@ -70,12 +71,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI(options => options.DocumentTitle = "Live Counter API");
+app.MapGet("/", (HttpContext context, IWebHostEnvironment environment) =>
+    context.User.Identity?.IsAuthenticated == true
+        ? Results.File(Path.Combine(environment.WebRootPath, "index.html"), "text/html")
+        : Results.Redirect("/Account/Login"));
+app.MapRazorPages();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 

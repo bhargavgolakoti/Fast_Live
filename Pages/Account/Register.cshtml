@@ -1,0 +1,22 @@
+@page
+@model LiveCounter.Pages.Account.RegisterModel
+@{
+    Layout = "~/Pages/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Create your space";
+}
+<div class="auth-heading">
+    <span class="eyebrow">START SOMETHING QUIET</span>
+    <h2>Create your space.</h2>
+    <p>Set up your private corner in less than a minute.</p>
+</div>
+<form method="post" class="auth-form" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger auth-alert" role="alert"></div>
+    <div class="field-group"><label asp-for="Input.DisplayName" class="form-label">Display name</label><div class="input-wrap"><i class="bi bi-person" aria-hidden="true"></i><input asp-for="Input.DisplayName" class="form-control" autocomplete="name" autofocus></div><span asp-validation-for="Input.DisplayName" class="field-error"></span></div>
+    <div class="field-group"><label asp-for="Input.Email" class="form-label">Email address</label><div class="input-wrap"><i class="bi bi-envelope" aria-hidden="true"></i><input asp-for="Input.Email" class="form-control" autocomplete="email"></div><span asp-validation-for="Input.Email" class="field-error"></span></div>
+    <div class="field-group"><label asp-for="Input.Password" class="form-label">Password</label><div class="input-wrap"><i class="bi bi-shield-lock" aria-hidden="true"></i><input asp-for="Input.Password" class="form-control" autocomplete="new-password"><button class="password-toggle" type="button" aria-label="Show password"><i class="bi bi-eye"></i></button></div><span asp-validation-for="Input.Password" class="field-error"></span><div class="password-hint"><i class="bi bi-info-circle"></i> Use at least 12 characters.</div></div>
+    <button class="btn btn-primary auth-submit" type="submit"><span>Create account</span><i class="bi bi-arrow-up-right"></i></button>
+</form>
+<div class="auth-switch">Already have an account? <a class="form-link" href="/Account/Login">Sign in <i class="bi bi-arrow-right"></i></a></div>
+@section Scripts {
+    <script src="~/auth.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,29 @@
+@page
+@model LiveCounter.Pages.Account.LoginModel
+@{
+    Layout = "~/Pages/Shared/_AuthLayout.cshtml";
+    ViewData["Title"] = "Welcome back";
+}
+<div class="auth-heading">
+    <span class="eyebrow">WELCOME BACK</span>
+    <h2>Return to your space.</h2>
+    <p>Sign in to pick up where you left off.</p>
+</div>
+<form method="post" class="auth-form" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger auth-alert" role="alert"></div>
+    <div class="field-group">
+        <label asp-for="Input.Email" class="form-label">Email address</label>
+        <div class="input-wrap"><i class="bi bi-envelope" aria-hidden="true"></i><input asp-for="Input.Email" class="form-control" autocomplete="email" autofocus></div>
+        <span asp-validation-for="Input.Email" class="field-error"></span>
+    </div>
+    <div class="field-group">
+        <div class="d-flex justify-content-between align-items-center"><label asp-for="Input.Password" class="form-label">Password</label><a class="form-link small" href="/Account/ForgotPassword">Forgot password?</a></div>
+        <div class="input-wrap"><i class="bi bi-lock" aria-hidden="true"></i><input asp-for="Input.Password" class="form-control" autocomplete="current-password"><button class="password-toggle" type="button" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
+        <span asp-validation-for="Input.Password" class="field-error"></span>
+    </div>
+    <button class="btn btn-primary auth-submit" type="submit"><span>Sign in</span><i class="bi bi-arrow-up-right"></i></button>
+</form>
+<div class="auth-switch">New to Afterglow? <a class="form-link" href="/Account/Register">Create an account <i class="bi bi-arrow-right"></i></a></div>
+@section Scripts {
+    <script src="~/auth.js" asp-append-version="true"></script>
+}
