@@ -15,3 +15,6 @@ document.querySelectorAll('form').forEach(form => form.addEventListener('submit'
     button.disabled = true;
     button.classList.add('is-loading');
 }));
+document.querySelectorAll('[data-dismiss-alert]').forEach(button => {
+    button.addEventListener('click', () => button.closest('.auth-dismissible')?.remove());
+});

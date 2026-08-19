@@ -42,8 +42,8 @@ public class RegisterModel(
         user.PasswordHash = passwordHasher.HashPassword(user, Input.Password!);
         database.Users.Add(user);
         await database.SaveChangesAsync(cancellationToken);
-        await SignInAsync(user);
-        return Redirect("/?created=1");
+        TempData["AccountCreatedMessage"] = "Your account was created successfully. Sign in to enter your space.";
+        return Redirect("/Account/Login");
     }
 
     private Task SignInAsync(LiveCounterUser user)
