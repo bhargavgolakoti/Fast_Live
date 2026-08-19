@@ -17,7 +17,7 @@ public class LoginModel(
 {
     [BindProperty]
     public LoginInput Input { get; set; } = new();
-    
+
     public string? AccountCreatedMessage => TempData["AccountCreatedMessage"] as string;
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
