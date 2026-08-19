@@ -1,6 +1,9 @@
 using LiveCounter.Data;
+using LiveCounter.Models;
 using LiveCounter.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,8 +16,29 @@ if (int.TryParse(railwayPort, out var port))
 
 builder.Services.AddDbContextFactory<LiveCounterDbContext>(options =>
     options.UseSqlite("Data Source=live-counter.db"));
+builder.Services.AddSingleton<IPasswordHasher<LiveCounterUser>, PasswordHasher<LiveCounterUser>>();
 builder.Services.AddSingleton<LivePresence>();
 builder.Services.AddScoped<LiveCounterStore>();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "livecounter.auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.LoginPath = "/";
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+    });
+builder.Services.AddAuthorization();
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +56,10 @@ using (var scope = app.Services.CreateScope())
     var database = scope.ServiceProvider.GetRequiredService<LiveCounterDbContext>();
     database.Database.EnsureCreated();
     database.EnsureCounterExists();
+    database.EnsureRootUser(
+        Environment.GetEnvironmentVariable("ROOT_EMAIL"),
+        Environment.GetEnvironmentVariable("ROOT_PASSWORD"),
+        scope.ServiceProvider.GetRequiredService<IPasswordHasher<LiveCounterUser>>());
 }
 
 // Configure the HTTP request pipeline.
@@ -43,6 +71,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI(options => options.DocumentTitle = "Live Counter API");
 app.MapControllers();
