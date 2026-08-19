@@ -15,6 +15,7 @@ builder.Services.AddDbContextFactory<LiveCounterDbContext>(options =>
     options.UseSqlite("Data Source=live-counter.db"));
 builder.Services.AddSingleton<LivePresence>();
 builder.Services.AddScoped<LiveCounterStore>();
+builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
