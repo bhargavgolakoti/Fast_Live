@@ -55,6 +55,7 @@ using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<LiveCounterDbContext>();
     database.Database.EnsureCreated();
+    database.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_Users_Email ON Users (Email)");
     database.EnsureCounterExists();
     database.EnsureRootUser(
         Environment.GetEnvironmentVariable("ROOT_EMAIL"),

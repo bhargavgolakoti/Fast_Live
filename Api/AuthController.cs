@@ -18,12 +18,15 @@ public class AuthController(
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var email = request.Email.Trim().ToLowerInvariant();
-        if (!IsValidEmail(email) || request.Password.Length < 12 || request.DisplayName.Trim().Length < 2)
+        var emailInput = request?.Email?.Trim() ?? string.Empty;
+        var password = request?.Password ?? string.Empty;
+        var displayName = request?.DisplayName?.Trim() ?? string.Empty;
+        if (!IsValidEmail(emailInput) || password.Length < 12 || displayName.Length < 2)
         {
             return BadRequest(new { error = "Use a valid email, a display name, and a password of at least 12 characters." });
         }
 
+        var email = emailInput.ToLowerInvariant();
         await using var database = await contextFactory.CreateDbContextAsync(cancellationToken);
         if (await database.Users.AnyAsync(user => user.Email == email, cancellationToken))
         {
@@ -33,12 +36,12 @@ public class AuthController(
         var user = new LiveCounterUser
         {
             Email = email,
-            DisplayName = request.DisplayName.Trim(),
+            DisplayName = displayName,
             PasswordHash = string.Empty,
             CreatedAt = DateTimeOffset.UtcNow,
             LastSeenAt = DateTimeOffset.UtcNow
         };
-        user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+        user.PasswordHash = passwordHasher.HashPassword(user, password);
         database.Users.Add(user);
         await database.SaveChangesAsync(cancellationToken);
         await SignIn(user);
@@ -48,9 +51,17 @@ public class AuthController(
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
     {
+        var emailInput = request?.Email?.Trim() ?? string.Empty;
+        var password = request?.Password ?? string.Empty;
+        if (!IsValidEmail(emailInput) || string.IsNullOrWhiteSpace(password))
+        {
+            return BadRequest(new { error = "Enter a valid email address and password." });
+        }
+
+        var email = emailInput.ToLowerInvariant();
         await using var database = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var user = await database.Users.SingleOrDefaultAsync(item => item.Email == request.Email.Trim().ToLower(), cancellationToken);
-        if (user is null || passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+        var user = await database.Users.SingleOrDefaultAsync(item => item.Email == email, cancellationToken);
+        if (user is null || passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Failed)
         {
             return Unauthorized(new { error = "Email or password is incorrect." });
         }
@@ -165,8 +176,8 @@ public class AuthController(
     private static bool IsValidEmail(string email) => new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email);
 }
 
-public record RegisterRequest(string Email, string Password, string DisplayName);
-public record LoginRequest(string Email, string Password);
+public record RegisterRequest(string? Email, string? Password, string? DisplayName);
+public record LoginRequest(string? Email, string? Password);
 public record ForgotPasswordRequest(string Email);
 public record ProfileRequest(string? DisplayName, string? Theme, string? Accent);
 public record StatusRequest(string Status, string? Message);

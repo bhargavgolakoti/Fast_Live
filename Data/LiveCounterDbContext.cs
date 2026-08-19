@@ -13,6 +13,11 @@ public class LiveCounterDbContext(DbContextOptions<LiveCounterDbContext> options
     public DbSet<SocialRoomMember> RoomMembers => Set<SocialRoomMember>();
     public DbSet<RoomInvite> RoomInvites => Set<RoomInvite>();
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<LiveCounterUser>().HasIndex(user => user.Email);
+    }
+
     public void EnsureCounterExists()
     {
         if (!Counters.Any(counter => counter.Id == 1))
